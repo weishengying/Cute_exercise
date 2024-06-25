@@ -1,1 +1,4 @@
 thirdparty/
+.vscode
+*log*
+a.out

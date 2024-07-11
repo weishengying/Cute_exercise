@@ -2,3 +2,4 @@ thirdparty/
 .vscode
 *log*
 a.out
+log.txt

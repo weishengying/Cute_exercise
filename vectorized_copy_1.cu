@@ -95,7 +95,8 @@ int main(int argc, char** argv)
   using Element = float;
 
   // Define a tensor shape with dynamic extents (m, n)
-  auto tensor_shape = make_shape(256, 512);
+  auto tensor_shape = make_shape(128, 64);
+  auto tensor_stride = make_stride(Int<64>{}, Int<1>{});
 
   // Allocate and initialize
   thrust::host_vector<Element> h_S(size(tensor_shape));
@@ -110,8 +111,8 @@ int main(int argc, char** argv)
   thrust::device_vector<Element> d_D = h_D;
 
   // Make tensors, default col-major
-  Tensor tensor_S = make_tensor(make_gmem_ptr(thrust::raw_pointer_cast(d_S.data())), make_layout(tensor_shape));
-  Tensor tensor_D = make_tensor(make_gmem_ptr(thrust::raw_pointer_cast(d_D.data())), make_layout(tensor_shape));
+  Tensor tensor_S = make_tensor(make_gmem_ptr(thrust::raw_pointer_cast(d_S.data())), make_layout(tensor_shape, tensor_stride));
+  Tensor tensor_D = make_tensor(make_gmem_ptr(thrust::raw_pointer_cast(d_D.data())), make_layout(tensor_shape, tensor_stride));
 
 
   // Tile tensors
@@ -136,11 +137,12 @@ int main(int argc, char** argv)
   Tensor tiled_tensor_D = tiled_divide(tensor_D, block_shape);      // ((M, N), m', n')
 
   // Thread arrangement
-  Layout thr_layout = make_layout(make_shape(Int<32>{}, Int<8>{}));
+  Layout thr_layout = make_layout(make_shape(Int<32>{}, Int<8>{}), make_stride(Int<8>{}, Int<1>{}));
   // Vector dimensions
   Layout vec_layout = make_layout(make_shape(Int<4>{}, Int<1>{}));
   // Define `AccessType` which controls the size of the actual memory access.
-  using AccessType = cutlass::AlignedArray<Element, size(vec_layout)>;
+  using AccessType = cutlass::AlignedArray<Element, 1>;
+  // using AccessType = Element;
   // A copy atom corresponds to one hardware memory access.
   using Atom = Copy_Atom<UniversalCopy<AccessType>, Element>;
 
@@ -154,7 +156,8 @@ int main(int argc, char** argv)
       Atom{},                       // access size
       thr_layout,               // thread layout
       vec_layout);                 // vector layout (e.g. 4x1)
-
+  // print(tiled_copy);
+  // print_latex(tiled_copy);
   // Determine grid and block dimensions
   dim3 gridDim (size<1>(tiled_tensor_D), size<2>(tiled_tensor_D));   // Grid shape corresponds to modes m' and n'
   dim3 blockDim(size(thr_layout));

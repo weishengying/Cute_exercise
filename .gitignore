@@ -3,3 +3,6 @@ thirdparty/
 *log*
 a.out
 log.txt
+*.egg*
+build
+*.so

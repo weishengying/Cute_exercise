@@ -1,3 +1,6 @@
 [submodule "thirdparty/cutlass"]
 	path = thirdparty/cutlass
 	url = https://github.com/NVIDIA/cutlass.git
+[submodule "tiny-flash-attention/flash_attention_cutlass/deps/cutlass"]
+	path = tiny-flash-attention/flash_attention_cutlass/deps/cutlass
+	url = https://github.com/NVIDIA/cutlass.git
